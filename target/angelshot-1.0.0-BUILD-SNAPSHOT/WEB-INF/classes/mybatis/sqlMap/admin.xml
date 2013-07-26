@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="admin">
+	
+	<sql id="pagingHeaderSql">
+		 <![CDATA[
+		   SELECT *
+		   FROM (
+		       SELECT ROWNUM RNUM ,B.*
+		       FROM (             
+		           SELECT (
+		                          CASE
+		                              WHEN (#{perpage} * (#{currentPage} - 1) + 1) > TOTAL_CNT THEN 
+		                                  1
+		                              ELSE
+		                               (#{perpage} * (#{currentPage} - 1) + 1)
+		                          END
+		                      ) START_NUM                
+		                      ,(
+		                          CASE
+		                              WHEN (#{currentPage} * #{perpage}) > TOTAL_CNT THEN 
+		                                  TOTAL_CNT
+		                              ELSE
+		                                  (#{currentPage} * #{perpage})
+		                          END
+		                      ) END_NUM            
+		                      , A.*
+		           FROM ( 
+		               SELECT COUNT (*) OVER () TOTAL_CNT
+		                         , A.*
+		               FROM (  
+		  ]]>   
+	</sql>            
+		
+	<sql id="pagingFooterSql">      
+		  <![CDATA[      
+		               ) A 
+		           ) A    
+		       ) B
+		       WHERE ROWNUM <= END_NUM
+		   )    
+		   WHERE RNUM >= START_NUM
+		  ]]>  
+	</sql>    
+
+	
+	<sql id="getUserListSql">
+		SELECT 
+			mac_address,usr.user_key, hp_no, agree_code, to_char(usr.wrt_dttm,'yyyy.mm.dd') agree_dttm,
+	        call_no, start_sido, start_gu, start_mn, start_poi_name,
+	        start_lat, start_long, end_sido, end_gu, end_mn,
+	        end_poi_name, end_lat, end_long, via_yn, call_price,
+	        receipt_no, status, call_hpno, to_char(cal.wrt_dttm,'yyyy.mm.dd hh:mm') wrt_dttm
+	     FROM DR_USER usr, DR_CALL cal
+		WHERE usr.user_key = cal.user_key
+		  <if test="hp_no != null and hp_no != ''">
+		 		 AND hp_no=${hp_no}
+		 </if> 
+		 <if test="call_hpno != null and call_hpno != ''">
+		 		 AND call_hpno=${call_hpno}
+		 </if>
+		 
+	</sql>
+	
+	
+	<select id="getUserList"  parameterType="hashmap" resultType="callVo">
+		<include refid="pagingHeaderSql"/>
+		<include refid="getUserListSql"/>
+		<include refid="pagingFooterSql"/>		
+	</select>
+	
+	<select id="getUserListHashMap"  parameterType="hashmap" resultType="hashmap">
+		<include refid="pagingHeaderSql"/>
+		<include refid="getUserListSql"/>
+		<include refid="pagingFooterSql"/>		
+	</select>
+	
+	
+	<select id="getUserListTotalCnt" parameterType="int" resultType="hashMap">
+		SELECT 
+			count(*) cnt
+	     FROM DR_USER usr, DR_CALL cal
+		WHERE usr.user_key = cal.user_key
+		 <if test="@com.skmns.util.Util@isEmpty(hp_no)">
+		 		 AND hp_no=${hp_no}
+		 </if> 
+		 <if test="call_hpno != null or call_hpno != ''">
+		 		 AND call_hpno=${hp_no}
+		 </if>
+	</select>
+
+	
+	
+</mapper>

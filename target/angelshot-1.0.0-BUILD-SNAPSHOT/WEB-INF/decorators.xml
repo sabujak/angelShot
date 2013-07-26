@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/views">
+	<excludes>
+		<pattern>/error*</pattern>
+		<pattern>/admin/admin*</pattern>
+	</excludes>
+	<decorator name="main" page="main.jsp">
+		<pattern>/*</pattern>
+	</decorator>
+	<decorator name="head" page="comm/head.jsp" />
+	<decorator name="footer" page="comm/footer.jsp" />
+	<decorator name="header" page="comm/header.jsp" />
+
+</decorators>
